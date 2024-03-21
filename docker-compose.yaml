@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  db:
+    container_name: postgres_db
+    image: postgres:13-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+  app:
+    container_name: app
+    build:
+      context: .
+    command: sh -c "source /venv/bin/activate && python3 manage.py migrate --noinput && pytest && python manage.py runserver 0.0.0.0:8000"
+    restart: always
+    ports:
+      - 8000:8000
+    volumes:
+      - ./app:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+volumes:
+  db_data:
